@@ -1,0 +1,112 @@
+networks:
+  spark-net:
+
+volumes:
+  notebooks:
+  spark-events:
+
+x-spark-common: &spark-common
+  build:
+    context: .
+    dockerfile: ./DockerfileSpark
+  networks: [spark-net]
+  environment:
+    SPARK_NO_DAEMONIZE: "true"   # keep foreground process for Docker
+    SPARK_LOG_DIR: /opt/spark/logs  # optional but handy
+
+  restart: unless-stopped
+
+# shared env (so it can be merged per-service)
+x-spark-env: &spark-env
+  SPARK_NO_DAEMONIZE: "true"      # keep Spark in foreground
+  SPARK_LOG_DIR: /opt/spark/logs  # optional but handy
+
+services:
+  spark-master:
+    <<: *spark-common
+    container_name: spark-master
+    platform: linux/amd64
+    environment:
+      <<: *spark-env
+    hostname: spark-master
+    command: ["/opt/spark/sbin/start-master.sh"]
+    ports:
+      - "7077:7077"   # Spark master RPC
+      - "8080:8080"   # Spark master UI
+
+  spark-worker:
+    <<: *spark-common
+    container_name: spark-worker
+    hostname: spark-worker
+    platform: linux/amd64
+    depends_on: [spark-master]
+    # Adjust cores/memory as needed
+    environment:
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_MEMORY=4g
+      - SPARK_NO_DAEMONIZE=true      # keep Spark in foreground
+      - SPARK_LOG_DIR=/opt/spark/logs  # optional but handy
+
+    command: ["/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077"]
+    ports:
+      - "8081:8081"   # Spark worker UI
+
+  spark-worker2:
+    <<: *spark-common
+    container_name: spark-worker2
+    hostname: spark-worker
+    platform: linux/amd64
+    depends_on: [spark-master]
+    # Adjust cores/memory as needed
+    environment:
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_MEMORY=4g
+      - SPARK_NO_DAEMONIZE=true      # keep Spark in foreground
+      - SPARK_LOG_DIR=/opt/spark/logs  # optional but handy
+
+    command: ["/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077"]
+    ports:
+      - "8082:8081"   # Spark worker UI
+
+  spark-history:
+    <<: *spark-common
+    container_name: spark-history
+    hostname: spark-history
+    platform: linux/amd64
+    # History Server scans event logs written by apps
+    environment:
+      SPARK_HISTORY_OPTS: >-
+        -Dspark.history.fs.logDirectory=/opt/spark/spark-events
+        -Dspark.history.retainedApplications=50
+      SPARK_NO_DAEMONIZE: "true"      # keep Spark in foreground
+    command: ["/opt/spark/sbin/start-history-server.sh"]
+    volumes:
+      - spark-events:/opt/spark/spark-events
+    ports:
+      - "18080:18080" # History Server UI
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: ./DockerfileJupyter
+    container_name: jupyter
+    hostname: jupyter
+    platform: linux/amd64
+    networks: [spark-net]
+    depends_on: [spark-master]
+    # NOTE: For local use we disable token; secure appropriately in shared envs
+    command: >
+          bash -lc "start-notebook.sh --ServerApp.token=''"
+    environment:
+      # handy for your notebooks
+      - SPARK_MASTER=spark://spark-master:7077
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS="notebook"
+    ports:
+      - "8888:8888"   # Jupyter UI
+      - "4040:4040"   # Spark Driver UI
+
+    volumes:
+      - notebooks:/home/jovyan/work
+    restart: unless-stopped
