@@ -29,7 +29,7 @@ This repository provides a complete Spark cluster setup with:
 1. **Clone and build**:
 ```bash
 git clone <repository-url>
-cd velox
+cd spark-gluten-velox
 docker-compose up --build
 ```
 
@@ -140,3 +140,4 @@ You need to have permissions for your chosen S3 bucket.
 - **Add workers**: Duplicate worker service with different ports
 - **Change data size**: Adjust `N_ROWS` variable in the benchmark notebook
 - **Custom queries**: Add your own workloads to the notebook
+- **Improve the docker-compose**: The docker compose can be improved in order spark-history server to work well ( you will need to send logs to a shared volume or to s3). 
