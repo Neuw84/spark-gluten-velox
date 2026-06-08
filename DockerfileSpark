@@ -4,8 +4,8 @@ FROM ubuntu:22.04
 # ---- Versions / args ----
 ARG HADOOP_VERSION=3.4.1
 ARG AWS_SDK_VERSION=2.29.0       
-ARG SPARK_VERSION=3.5.2
-ARG SCALA_BINARY=2.12
+ARG SPARK_VERSION=4.0.1
+ARG SCALA_BINARY=2.13
 ARG SPARK_UID=185
 ARG SPARK_GID=185
 ARG TARGETARCH    # provided by buildx: amd64 | arm64
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN set -eux; \
     mkdir -p /opt; \
-    wget -q https://mirror.lyrahosting.com/apache/spark/spark-3.5.2/spark-3.5.2-bin-hadoop3.tgz -O /tmp/spark.tgz; \
+    wget -q https://mirror.lyrahosting.com/apache/spark/spark-4.0.1/spark-4.0.1-bin-hadoop3.tgz -O /tmp/spark.tgz; \
     tar -xzf /tmp/spark.tgz -C /opt; \
     ln -sT "/opt/spark-${SPARK_VERSION}-bin-hadoop3" "${SPARK_HOME}"; \
     rm -f /tmp/spark.tgz
@@ -99,9 +99,9 @@ ENV LD_LIBRARY_PATH=${HADOOP_NATIVE_DIR}:$LD_LIBRARY_PATH
 # This extracts the tarball into ${SPARK_HOME}/jars/apache-gluten-1.4.0-incubating-bin-spark35/
 # You can reference the plugin jars at runtime (e.g., via spark-submit or spark-defaults).
 RUN set -eux; cd ${SPARK_HOME}/jars; \
-    wget -q https://dlcdn.apache.org/incubator/gluten/1.4.0-incubating/apache-gluten-1.4.0-incubating-bin-spark35.tar.gz; \
-    tar -xzf apache-gluten-1.4.0-incubating-bin-spark35.tar.gz; \
-    rm -f apache-gluten-1.4.0-incubating-bin-spark35.tar.gz
+    wget -q https://dlcdn.apache.org/gluten/1.6.0/apache-gluten-1.6.0-bin-spark-4.0.tar.gz; \
+    tar -xzf apache-gluten-1.6.0-bin-spark-4.0.tar.gz; \
+    rm -f apache-gluten-1.6.0-bin-spark-4.0.tar.gz
 
 #Your Jars would be here!
 
