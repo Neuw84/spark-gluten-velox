@@ -5,8 +5,8 @@ A Docker Compose template demonstrating Apache Spark performance improvements wi
 ## Overview
 
 This repository provides a complete Spark cluster setup with:
-- **Apache Spark 3.5.2** with Hadoop 3.4.1
-- **Gluten 1.4.0** with Velox backend for query acceleration
+- **Apache Spark 4.0.1** with Hadoop 3.4.1
+- **Gluten 1.6.0** with Velox backend for query acceleration
 - **JupyterLab** environment for interactive analysis
 - **S3A integration** with optimized committers and native Hadopp libraries
 - **Performance benchmarking** notebook comparing Velox vs vanilla Spark
