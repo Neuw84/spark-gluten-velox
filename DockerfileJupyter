@@ -88,6 +88,12 @@ RUN cd ${SPARK_HOME}/jars && \
     tar -xzf apache-gluten-1.6.0-bin-spark-4.0.tar.gz && \
     rm apache-gluten-1.6.0-bin-spark-4.0.tar.gz
 
+# ---- Apache DataFusion Comet (alternative accelerator; Spark 4.0 / Scala 2.13) ----
+ARG COMET_VERSION=0.16.0
+RUN cd ${SPARK_HOME}/jars && \
+    wget -q https://repo1.maven.org/maven2/org/apache/datafusion/comet-spark-spark4.0_2.13/${COMET_VERSION}/comet-spark-spark4.0_2.13-${COMET_VERSION}.jar
+
+
 #Your Jars would be here!
 
 
